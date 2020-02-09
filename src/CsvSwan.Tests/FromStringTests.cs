@@ -1,5 +1,6 @@
 namespace CsvSwan.Tests
 {
+    using System.Collections.Generic;
     using System.Linq;
     using Xunit;
 
@@ -93,6 +94,88 @@ cabbage,port,mushroom,elixir";
                 Assert.Equal(new[]{ "788", "0.656", "trombone" }, rows[2]);
                 Assert.Equal(new[]{ string.Empty, string.Empty, string.Empty }, rows[3]);
             }
+        }
+
+        [Fact]
+        public void HandlesRfc4180EscapedQuotesSingleQuoteOnly()
+        {
+            const string input = "\"q\"\"\",a\r\n1,2";
+
+            using (var csv = Csv.FromString(input))
+            {
+                var rows = csv.GetAllRowValues();
+
+                Assert.Equal(2, rows.Count);
+                RowMatch(rows[0], @"q""", "a");
+                RowMatch(rows[1], "1", "2");
+            }
+        }
+
+        [Fact]
+        public void HandlesRfc4180EscapedQuotesFollowedByText()
+        {
+            const string input = "\"\"\"<\",1\r\n,";
+
+            using (var csv = Csv.FromString(input))
+            {
+                var rows = csv.GetAllRowValues();
+
+                Assert.Equal(2, rows.Count);
+
+                RowMatch(rows[0], @"""<", "1");
+                RowMatch(rows[1], string.Empty, string.Empty);
+            }
+        }
+
+        [Fact]
+        public void HandlesRfc4180EmptyQuotedString()
+        {
+            const string input = "\"\",1";
+
+            using (var csv = Csv.FromString(input))
+            {
+                var rows = csv.GetAllRowValues();
+
+                Assert.Equal(1, rows.Count);
+
+                RowMatch(rows[0], string.Empty, "1");
+            }
+        }
+
+        [Fact]
+        public void HandlesRfc4180QuotedStringWithDoubleQuoteOnly()
+        {
+            const string doubleQuote = "\"\"";
+            var input = $"\"{doubleQuote}{doubleQuote}\", 1";
+
+            using (var csv = Csv.FromString(input))
+            {
+                var rows = csv.GetAllRowValues();
+
+                Assert.Equal(1, rows.Count);
+
+                RowMatch(rows[0], doubleQuote, "1");
+            }
+        }
+
+        [Fact]
+        public void HandlesRfc4180EscapedQuotesComplex()
+        {
+            const string input = "\"A field with a \"\"quote\"\"\",field2\r\nfield 1,\"quoted field,\"";
+
+            using (var csv = Csv.FromString(input))
+            {
+                var rows = csv.GetAllRowValues();
+
+                Assert.Equal(2, rows.Count);
+                RowMatch(rows[0], "A field with a \"quote\"", "field2");
+                RowMatch(rows[1], "field 1", "quoted field,");
+            }
+        }
+
+        private static void RowMatch(IReadOnlyList<string> row, params string[] values)
+        {
+            Assert.Equal(values, row);
         }
     }
 }

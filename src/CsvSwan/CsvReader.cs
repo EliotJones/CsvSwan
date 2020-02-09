@@ -44,9 +44,13 @@
                 }
 
                 output.Clear();
+
                 var prevWasEscaped = false;
                 int prev = 0;
                 int b;
+
+                var lastQuoteType = LastQuoteType.None;
+
                 while ((b = reader.Read()) >= 0)
                 {
                     switch (state)
@@ -78,7 +82,7 @@
                             }
 
                             state = State.ReadingField;
-                            sb.Append((char) b);
+                            sb.Append((char)b);
                             break;
                         case State.None:
                             {
@@ -114,15 +118,37 @@
 
                                     sb.Append((char)b);
                                 }
+                                else
+                                {
+                                    lastQuoteType = LastQuoteType.FieldStart;
+                                }
                             }
                             break;
                         case State.InsideQuote:
                             if (IsQuote(b) && !prevWasEscaped && !IsEscape(prev))
                             {
-                                state = State.ReadingToSeparator;
-                                output.Add(sb.ToString());
-                                sb.Clear();
-                                break;
+                                var previousWasEscape = IsQuote(prev) && lastQuoteType == LastQuoteType.EscapeQuote;
+
+                                if (previousWasEscape)
+                                {
+                                    lastQuoteType = LastQuoteType.None;
+                                }
+                                else if (reader.Peek() != '"')
+                                {
+                                    state = State.ReadingToSeparator;
+                                    output.Add(sb.ToString());
+                                    sb.Clear();
+                                    break;
+                                }
+                                else
+                                {
+                                    lastQuoteType = LastQuoteType.EscapeQuote;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                lastQuoteType = LastQuoteType.None;
                             }
 
                             sb.Append((char)b);
@@ -180,6 +206,13 @@
                     state = State.Complete;
                     return true;
                 }
+
+                if (state == State.ReadingToSeparator)
+                {
+                    values = output;
+                    state = State.Complete;
+                    return true;
+                }
             }
 
             return false;
@@ -232,6 +265,13 @@
             Endline = 4,
             EndlineReturn = 5,
             Complete = 6
+        }
+
+        private enum LastQuoteType : byte
+        {
+            None = 0,
+            FieldStart = 1,
+            EscapeQuote = 2
         }
 
         public void SeekStart()
