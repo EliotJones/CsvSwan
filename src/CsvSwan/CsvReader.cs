@@ -117,7 +117,7 @@
                             }
                             break;
                         case State.InsideQuote:
-                            if (IsQuote(b) && !prevWasEscaped && IsEscape(prev))
+                            if (IsQuote(b) && !prevWasEscaped && !IsEscape(prev))
                             {
                                 state = State.ReadingToSeparator;
                                 output.Add(sb.ToString());
@@ -145,6 +145,17 @@
                             }
 
                             sb.Append((char)b);
+                            break;
+                        case State.ReadingToSeparator:
+                            if (IsSeperator(b))
+                            {
+                                state = State.None;
+                            }
+                            else if (IsNewline(b))
+                            {
+                                state = State.EndlineReturn;
+                            }
+
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
@@ -176,7 +187,7 @@
 
         private bool IsQuote(int b) => options.AreTextFieldsQuoted && b == options.QuotationCharacter;
         private bool IsSeperator(int b) => b == options.Separator;
-        private bool IsEscape(int b) => b == '\\';
+        private bool IsEscape(int b) => options.BackslashEscapesQuotes && b == '\\';
 
         private bool IsEscapedSeparator(bool prevWasEscaped, int prev) => !separatorIsEscapable
                                                                           && !prevWasEscaped

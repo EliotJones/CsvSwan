@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Text;
 
     public class Csv : IDisposable
@@ -26,12 +25,9 @@
             get
             {
                 reader.SeekStart();
-                var offset = reader.Position;
                 while (reader.ReadRow(out currentValues))
                 {
                     yield return accessor;
-
-                    offset = reader.Position;
                 }
             }
         }
@@ -58,6 +54,18 @@
             this.canDisposeStream = canDisposeStream;
         }
 
+        public IReadOnlyList<IReadOnlyList<string>> GetAllRowValues()
+        {
+            var result = new List<IReadOnlyList<string>>();
+
+            foreach (var row in Rows)
+            {
+                result.Add(row.GetValues());
+            }
+
+            return result;
+        }
+
         public void Dispose()
         {
             if (canDisposeStream)
@@ -66,6 +74,10 @@
             }
         }
 
+        /// <summary>
+        /// Provides access to values in the currently loaded row.
+        /// References to this should not be stored.
+        /// </summary>
         public class RowAccessor
         {
             private readonly Csv csv;
@@ -75,6 +87,10 @@
                 this.csv = csv ?? throw new ArgumentNullException(nameof(csv));
             }
 
+            /// <summary>
+            /// Get all values in the row as <see langword="string"/>s.
+            /// </summary>
+            /// <returns>A snapshot of the values for this row.</returns>
             public IReadOnlyList<string> GetValues()
             {
                 return new List<string>(csv.currentValues);
