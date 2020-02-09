@@ -28,5 +28,18 @@ we have,four columns,42.564,that's all 2 rows";
                 Assert.Equal(new[]{ "we have", "four columns", "42.564", "that's all 2 rows" }, rows[1]);
             }
         }
+
+        [Fact]
+        public void RowsCanBeEnumeratedMultipleTimes()
+        {
+            using (var csv = Csv.FromString(SimplestInput))
+            {
+                var rows1 = csv.Rows.Select(x => x.GetValues()).ToList();
+                var rows2 = csv.Rows.Select(x => x.GetValues()).ToList();
+
+                Assert.Equal(rows1[0], rows2[0]);
+                Assert.Equal(rows1[1], rows2[1]);
+            }
+        }
     }
 }
