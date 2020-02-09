@@ -203,6 +203,20 @@ cabbage,port,mushroom,elixir";
             }
         }
 
+        [Fact]
+        public void IgnoresEscapedBackslashPrecedingQuote()
+        {
+            const string input = "\"just a backslash\\\\\", two";
+
+            using (var csv = Csv.FromString(input))
+            {
+                var rows = csv.GetAllRowValues();
+
+                Assert.Equal(1, rows.Count);
+                RowMatch(rows[0], "just a backslash\\", "two");
+            }
+        }
+
         private static void RowMatch(IReadOnlyList<string> row, params string[] values)
         {
             Assert.Equal(values, row);

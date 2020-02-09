@@ -151,10 +151,26 @@
                                 lastQuoteType = LastQuoteType.None;
                             }
 
-                            if (IsEscape(b) && IsQuote(reader.Peek()))
+                            var isEscape = IsEscape(b);
+
+                            if (isEscape)
                             {
-                                lastQuoteType = LastQuoteType.EscapeQuote;
-                                break;
+                                if (IsQuote(reader.Peek()))
+                                {
+                                    if (IsEscape(prev) && !prevWasEscaped)
+                                    {
+
+                                    }
+                                    else
+                                    {
+                                        lastQuoteType = LastQuoteType.EscapeQuote;
+                                        break;
+                                    }
+                                }
+                                else if (!prevWasEscaped)
+                                {
+                                    break;
+                                }
                             }
 
                             sb.Append((char)b);
