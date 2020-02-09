@@ -125,9 +125,9 @@
                             }
                             break;
                         case State.InsideQuote:
-                            if (IsQuote(b) && !prevWasEscaped && !IsEscape(prev))
+                            if (IsQuote(b))
                             {
-                                var previousWasEscape = IsQuote(prev) && lastQuoteType == LastQuoteType.EscapeQuote;
+                                var previousWasEscape = lastQuoteType == LastQuoteType.EscapeQuote;
 
                                 if (previousWasEscape)
                                 {
@@ -149,6 +149,12 @@
                             else
                             {
                                 lastQuoteType = LastQuoteType.None;
+                            }
+
+                            if (IsEscape(b) && IsQuote(reader.Peek()))
+                            {
+                                lastQuoteType = LastQuoteType.EscapeQuote;
+                                break;
                             }
 
                             sb.Append((char)b);

@@ -141,7 +141,7 @@ cabbage,port,mushroom,elixir";
                 RowMatch(rows[0], string.Empty, "1");
             }
         }
-
+        
         [Fact]
         public void HandlesRfc4180QuotedStringWithDoubleQuoteOnly()
         {
@@ -170,6 +170,36 @@ cabbage,port,mushroom,elixir";
                 Assert.Equal(2, rows.Count);
                 RowMatch(rows[0], "A field with a \"quote\"", "field2");
                 RowMatch(rows[1], "field 1", "quoted field,");
+            }
+        }
+
+        [Fact]
+        public void HandlesBackslashEscapedQuotes()
+        {
+            const string input = "\"quote \\\"and\"\" rfc-4180 double\", field a\r\n1,2";
+
+            using (var csv = Csv.FromString(input))
+            {
+                var rows = csv.GetAllRowValues();
+
+                Assert.Equal(2, rows.Count);
+                RowMatch(rows[0], "quote \"and\" rfc-4180 double", "field a");
+                RowMatch(rows[1], "1", "2");
+            }
+        }
+
+        [Fact]
+        public void HandlesBackslashEscapedQuotesAtEnd()
+        {
+            const string input = "$,\"a-z\\\"\",blorp\r\n£,nope,bleep";
+
+            using (var csv = Csv.FromString(input))
+            {
+                var rows = csv.GetAllRowValues();
+
+                Assert.Equal(2, rows.Count);
+                RowMatch(rows[0], "$", "a-z\"", "blorp");
+                RowMatch(rows[1], "£", "nope", "bleep");
             }
         }
 

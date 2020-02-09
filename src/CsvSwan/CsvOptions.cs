@@ -45,10 +45,10 @@
         public Encoding Encoding { get; set; } = null;
 
         /// <summary>
-        /// The backslash character can be used to escape quote markes around fields.
-        /// Default <see langword="false"/>.
+        /// The backslash character can be used to escape quote marks inside fields.
+        /// Default <see langword="true"/>.
         /// </summary>
-        public bool BackslashEscapesQuotes { get; set; }
+        public bool BackslashEscapesQuotes { get; set; } = true;
 
         /// <summary>
         /// Create a new <see cref="CsvOptions"/> with the specified separator.
