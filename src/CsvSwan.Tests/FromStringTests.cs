@@ -25,8 +25,8 @@ we have,four columns,42.564,that's all 2 rows";
             {
                 var rows = csv.Rows.Select(x => x.GetValues().ToList()).ToList();
 
-                Assert.Equal(new[]{ "a string", "another one", "1.433", "simple" }, rows[0]);
-                Assert.Equal(new[]{ "we have", "four columns", "42.564", "that's all 2 rows" }, rows[1]);
+                RowMatch(rows[0], "a string", "another one", "1.433", "simple");
+                RowMatch(rows[1], "we have", "four columns", "42.564", "that's all 2 rows");
             }
         }
 
@@ -56,9 +56,9 @@ cabbage,port,mushroom,elixir";
 
                 Assert.Equal(3, rows.Count);
 
-                Assert.Equal(new[]{ "ham", "egg", string.Empty, "cheese" }, rows[0]);
-                Assert.Equal(new[]{ string.Empty, string.Empty, string.Empty, string.Empty }, rows[1]);
-                Assert.Equal(new[]{ "cabbage", "port", "mushroom", "elixir" }, rows[2]);
+                RowMatch(rows[0], "ham", "egg", string.Empty, "cheese");
+                RowMatch(rows[1], string.Empty, string.Empty, string.Empty, string.Empty);
+                RowMatch(rows[2], "cabbage", "port", "mushroom", "elixir");
             }
         }
 
@@ -73,8 +73,8 @@ cabbage,port,mushroom,elixir";
 
                 Assert.Equal(2, rows.Count);
 
-                Assert.Equal(new[]{ "value 1", "value, comma", "no quote" }, rows[0]);
-                Assert.Equal(new[]{ "quoted", "not quoted", "7" }, rows[1]);
+                RowMatch(rows[0], "value 1", "value, comma", "no quote");
+                RowMatch(rows[1], "quoted", "not quoted", "7");
             }
         }
 
@@ -89,10 +89,10 @@ cabbage,port,mushroom,elixir";
 
                 Assert.Equal(4, rows.Count);
 
-                Assert.Equal(new[]{ "7556", "546", "harp" }, rows[0]);
-                Assert.Equal(new[]{ "534", "778", "lute" }, rows[1]);
-                Assert.Equal(new[]{ "788", "0.656", "trombone" }, rows[2]);
-                Assert.Equal(new[]{ string.Empty, string.Empty, string.Empty }, rows[3]);
+                RowMatch(rows[0], "7556", "546", "harp");
+                RowMatch(rows[1], "534", "778", "lute");
+                RowMatch(rows[2], "788", "0.656", "trombone");
+                RowMatch(rows[3], string.Empty, string.Empty, string.Empty);
             }
         }
 
@@ -141,7 +141,7 @@ cabbage,port,mushroom,elixir";
                 RowMatch(rows[0], string.Empty, "1");
             }
         }
-        
+
         [Fact]
         public void HandlesRfc4180QuotedStringWithDoubleQuoteOnly()
         {
@@ -214,6 +214,23 @@ cabbage,port,mushroom,elixir";
 
                 Assert.Equal(1, rows.Count);
                 RowMatch(rows[0], "just a backslash\\", "two");
+            }
+        }
+
+        [Fact]
+        public void SupportsTabSeparator()
+        {
+            const string input = "\"aesop rock\"\t1.796\tgreen\r\n\"ho99o9\"\t2.732\tblue\nN/A\t7.6\tlilac";
+
+            using (var csv = Csv.FromString(input, '\t'))
+            {
+                var rows = csv.GetAllRowValues();
+
+                Assert.Equal(3, rows.Count);
+
+                RowMatch(rows[0], "aesop rock", "1.796", "green");
+                RowMatch(rows[1], "ho99o9", "2.732", "blue");
+                RowMatch(rows[2], "N/A", "7.6", "lilac");
             }
         }
 

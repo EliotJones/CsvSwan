@@ -11,10 +11,20 @@
         public static Csv Open(Stream fileStream, char separator = ',') => new Csv(fileStream, CsvOptions.WithSeparator(separator), false);
         public static Csv Open(byte[] fileBytes, char separator = ',') => new Csv(new MemoryStream(fileBytes), CsvOptions.WithSeparator(separator), true);
         public static Csv Open(Stream fileStream, CsvOptions options) => new Csv(fileStream, options, false);
-        public static Csv FromString(string value, char separator = ',') => FromString(value, CsvOptions.WithSeparator(separator));
-        public static Csv FromString(string value, CsvOptions options) => new Csv(new MemoryStream(Encoding.UTF8.GetBytes(value)), options, true);
+        public static Csv FromString(string value, char separator = ',') => FromString(value, new CsvOptions
+        {
+            Separator = separator,
+            Encoding = Encoding.Unicode
+        });
+
+        public static Csv FromString(string value, CsvOptions options)
+        {
+            var encoding = options.Encoding ?? Encoding.UTF8;
+            return new Csv(new MemoryStream(encoding.GetBytes(value)), options, true);
+        }
 
         private readonly CsvReader reader;
+        private readonly Stream stream;
         private readonly bool canDisposeStream;
 
         private IReadOnlyList<string> currentValues;
@@ -51,6 +61,7 @@
 
             reader = new CsvReader(stream, options);
             accessor = new RowAccessor(this);
+            this.stream = stream;
             this.canDisposeStream = canDisposeStream;
         }
 
@@ -68,9 +79,11 @@
 
         public void Dispose()
         {
+            reader.Dispose();
+            
             if (canDisposeStream)
             {
-                reader.Dispose();
+                stream?.Dispose();
             }
         }
 

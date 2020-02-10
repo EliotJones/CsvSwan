@@ -250,7 +250,7 @@
 
         public void Dispose()
         {
-            stream?.Dispose();
+            stream?.Flush();
         }
 
         private static bool IsWhitespace(int value, bool includeNewline, bool includeTab)
