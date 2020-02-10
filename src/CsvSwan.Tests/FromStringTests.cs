@@ -1,5 +1,7 @@
 namespace CsvSwan.Tests
 {
+    using System;
+    using System.Collections.Generic;
     using System.Linq;
     using Xunit;
 
@@ -14,6 +16,47 @@ we have,four columns,42.564,that's all 2 rows";
             using (var csv = Csv.FromString(SimplestInput))
             {
                 Assert.Equal(2, csv.Rows.Count());
+            }
+        }
+
+        [Fact]
+        public void RowValuesCanBeReadAsDecimal()
+        {
+            using (var csv = Csv.FromString(SimplestInput))
+            {
+                var values = new List<decimal>();
+
+                foreach (var row in csv.Rows)
+                {
+                    values.Add(row.GetDecimal(2));
+                }
+
+                Assert.Equal(new[] { 1.433m, 42.564m }, values);
+            }
+        }
+
+        [Fact]
+        public void RowValueWrongTypeThrows()
+        {
+            using (var csv = Csv.FromString(SimplestInput))
+            {
+                foreach (var row in csv.Rows)
+                {
+                    Assert.Throws<FormatException>(() => row.GetInt(0));
+                }
+            }
+        }
+
+        [Fact]
+        public void RowWrongIndexThrows()
+        {
+            using (var csv = Csv.FromString(SimplestInput))
+            {
+                foreach (var row in csv.Rows)
+                {
+                    Assert.Throws<ArgumentOutOfRangeException>(() => row.GetInt(-1));
+                    Assert.Throws<ArgumentOutOfRangeException>(() => row.GetInt(5));
+                }
             }
         }
 

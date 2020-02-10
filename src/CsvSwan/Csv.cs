@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Text;
 
@@ -36,8 +37,13 @@
         private readonly bool canDisposeStream;
 
         private IReadOnlyList<string> currentValues;
+        private int rowIndex = -1;
         private readonly RowAccessor accessor;
 
+        /// <summary>
+        /// Get the header row values for this file. If there is no header row (<see cref="CsvOptions.HasHeaderRow"/> is
+        /// <see langword="false"/>) then this is an empty list.
+        /// </summary>
         public IReadOnlyList<string> HeaderRow => reader.GetHeaderRow();
 
         /// <summary>
@@ -48,9 +54,11 @@
             get
             {
                 reader.SeekStart(true);
+                rowIndex = -1;
                 
                 while (reader.ReadRow(out currentValues))
                 {
+                    rowIndex++;
                     yield return accessor;
                 }
             }
@@ -128,6 +136,49 @@
             public IReadOnlyList<string> GetValues()
             {
                 return new List<string>(csv.currentValues);
+            }
+
+            public int GetInt(int index, IFormatProvider formatProvider = null)
+            {
+                GuardIndex(index);
+                return int.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.CurrentCulture);
+            }
+
+            public long GetLong(int index, IFormatProvider formatProvider = null)
+            {
+                GuardIndex(index);
+                return long.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.CurrentCulture);
+            }
+
+            public decimal GetDecimal(int index, IFormatProvider formatProvider = null)
+            {
+                GuardIndex(index);
+                return decimal.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.CurrentCulture);
+            }
+
+            public double GetDouble(int index, IFormatProvider formatProvider = null)
+            {
+                GuardIndex(index);
+                return double.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.CurrentCulture);
+            }
+
+            public string GetString(int index)
+            {
+                GuardIndex(index);
+                return csv.currentValues[index];
+            }
+
+            private void GuardIndex(int index)
+            {
+                if (index < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index), $"Index cannot be negative, got: {index}. For row {csv.rowIndex}.");
+                }
+
+                if (index >= csv.currentValues.Count)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index), $"Index was out of range, the maximum index value is {csv.currentValues.Count - 1}. For row {csv.rowIndex}.");
+                }
             }
         }
     }
