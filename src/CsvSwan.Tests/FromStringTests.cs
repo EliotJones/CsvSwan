@@ -1,6 +1,5 @@
 namespace CsvSwan.Tests
 {
-    using System.Collections.Generic;
     using System.Linq;
     using Xunit;
 
@@ -25,8 +24,8 @@ we have,four columns,42.564,that's all 2 rows";
             {
                 var rows = csv.Rows.Select(x => x.GetValues().ToList()).ToList();
 
-                RowMatch(rows[0], "a string", "another one", "1.433", "simple");
-                RowMatch(rows[1], "we have", "four columns", "42.564", "that's all 2 rows");
+                TestHelpers.RowMatch(rows[0], "a string", "another one", "1.433", "simple");
+                TestHelpers.RowMatch(rows[1], "we have", "four columns", "42.564", "that's all 2 rows");
             }
         }
 
@@ -56,9 +55,9 @@ cabbage,port,mushroom,elixir";
 
                 Assert.Equal(3, rows.Count);
 
-                RowMatch(rows[0], "ham", "egg", string.Empty, "cheese");
-                RowMatch(rows[1], string.Empty, string.Empty, string.Empty, string.Empty);
-                RowMatch(rows[2], "cabbage", "port", "mushroom", "elixir");
+                TestHelpers.RowMatch(rows[0], "ham", "egg", string.Empty, "cheese");
+                TestHelpers.RowMatch(rows[1], string.Empty, string.Empty, string.Empty, string.Empty);
+                TestHelpers.RowMatch(rows[2], "cabbage", "port", "mushroom", "elixir");
             }
         }
 
@@ -73,8 +72,8 @@ cabbage,port,mushroom,elixir";
 
                 Assert.Equal(2, rows.Count);
 
-                RowMatch(rows[0], "value 1", "value, comma", "no quote");
-                RowMatch(rows[1], "quoted", "not quoted", "7");
+                TestHelpers.RowMatch(rows[0], "value 1", "value, comma", "no quote");
+                TestHelpers.RowMatch(rows[1], "quoted", "not quoted", "7");
             }
         }
 
@@ -89,10 +88,10 @@ cabbage,port,mushroom,elixir";
 
                 Assert.Equal(4, rows.Count);
 
-                RowMatch(rows[0], "7556", "546", "harp");
-                RowMatch(rows[1], "534", "778", "lute");
-                RowMatch(rows[2], "788", "0.656", "trombone");
-                RowMatch(rows[3], string.Empty, string.Empty, string.Empty);
+                TestHelpers.RowMatch(rows[0], "7556", "546", "harp");
+                TestHelpers.RowMatch(rows[1], "534", "778", "lute");
+                TestHelpers.RowMatch(rows[2], "788", "0.656", "trombone");
+                TestHelpers.RowMatch(rows[3], string.Empty, string.Empty, string.Empty);
             }
         }
 
@@ -106,8 +105,8 @@ cabbage,port,mushroom,elixir";
                 var rows = csv.GetAllRowValues();
 
                 Assert.Equal(2, rows.Count);
-                RowMatch(rows[0], @"q""", "a");
-                RowMatch(rows[1], "1", "2");
+                TestHelpers.RowMatch(rows[0], @"q""", "a");
+                TestHelpers.RowMatch(rows[1], "1", "2");
             }
         }
 
@@ -122,8 +121,8 @@ cabbage,port,mushroom,elixir";
 
                 Assert.Equal(2, rows.Count);
 
-                RowMatch(rows[0], @"""<", "1");
-                RowMatch(rows[1], string.Empty, string.Empty);
+                TestHelpers.RowMatch(rows[0], @"""<", "1");
+                TestHelpers.RowMatch(rows[1], string.Empty, string.Empty);
             }
         }
 
@@ -138,7 +137,7 @@ cabbage,port,mushroom,elixir";
 
                 Assert.Equal(1, rows.Count);
 
-                RowMatch(rows[0], string.Empty, "1");
+                TestHelpers.RowMatch(rows[0], string.Empty, "1");
             }
         }
 
@@ -154,7 +153,7 @@ cabbage,port,mushroom,elixir";
 
                 Assert.Equal(1, rows.Count);
 
-                RowMatch(rows[0], doubleQuote, "1");
+                TestHelpers.RowMatch(rows[0], doubleQuote, "1");
             }
         }
 
@@ -168,8 +167,8 @@ cabbage,port,mushroom,elixir";
                 var rows = csv.GetAllRowValues();
 
                 Assert.Equal(2, rows.Count);
-                RowMatch(rows[0], "A field with a \"quote\"", "field2");
-                RowMatch(rows[1], "field 1", "quoted field,");
+                TestHelpers.RowMatch(rows[0], "A field with a \"quote\"", "field2");
+                TestHelpers.RowMatch(rows[1], "field 1", "quoted field,");
             }
         }
 
@@ -183,8 +182,8 @@ cabbage,port,mushroom,elixir";
                 var rows = csv.GetAllRowValues();
 
                 Assert.Equal(2, rows.Count);
-                RowMatch(rows[0], "quote \"and\" rfc-4180 double", "field a");
-                RowMatch(rows[1], "1", "2");
+                TestHelpers.RowMatch(rows[0], "quote \"and\" rfc-4180 double", "field a");
+                TestHelpers.RowMatch(rows[1], "1", "2");
             }
         }
 
@@ -198,8 +197,8 @@ cabbage,port,mushroom,elixir";
                 var rows = csv.GetAllRowValues();
 
                 Assert.Equal(2, rows.Count);
-                RowMatch(rows[0], "$", "a-z\"", "blorp");
-                RowMatch(rows[1], "£", "nope", "bleep");
+                TestHelpers.RowMatch(rows[0], "$", "a-z\"", "blorp");
+                TestHelpers.RowMatch(rows[1], "£", "nope", "bleep");
             }
         }
 
@@ -213,7 +212,7 @@ cabbage,port,mushroom,elixir";
                 var rows = csv.GetAllRowValues();
 
                 Assert.Equal(1, rows.Count);
-                RowMatch(rows[0], "just a backslash\\", "two");
+                TestHelpers.RowMatch(rows[0], "just a backslash\\", "two");
             }
         }
 
@@ -228,15 +227,10 @@ cabbage,port,mushroom,elixir";
 
                 Assert.Equal(3, rows.Count);
 
-                RowMatch(rows[0], "aesop rock", "1.796", "green");
-                RowMatch(rows[1], "ho99o9", "2.732", "blue");
-                RowMatch(rows[2], "N/A", "7.6", "lilac");
+                TestHelpers.RowMatch(rows[0], "aesop rock", "1.796", "green");
+                TestHelpers.RowMatch(rows[1], "ho99o9", "2.732", "blue");
+                TestHelpers.RowMatch(rows[2], "N/A", "7.6", "lilac");
             }
-        }
-
-        private static void RowMatch(IReadOnlyList<string> row, params string[] values)
-        {
-            Assert.Equal(values, row);
         }
     }
 }
