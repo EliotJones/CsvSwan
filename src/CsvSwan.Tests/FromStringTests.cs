@@ -223,6 +223,8 @@ cabbage,port,mushroom,elixir";
 
             using (var csv = Csv.FromString(input, '\t'))
             {
+                Assert.Empty(csv.HeaderRow);
+
                 var rows = csv.GetAllRowValues();
 
                 Assert.Equal(3, rows.Count);
@@ -230,6 +232,61 @@ cabbage,port,mushroom,elixir";
                 TestHelpers.RowMatch(rows[0], "aesop rock", "1.796", "green");
                 TestHelpers.RowMatch(rows[1], "ho99o9", "2.732", "blue");
                 TestHelpers.RowMatch(rows[2], "N/A", "7.6", "lilac");
+            }
+        }
+
+        [Fact]
+        public void HeaderRow01()
+        {
+            const string input
+                = @"name,time,approved
+sue,16,y
+h,,y
+fred,5,n";
+
+            using (var csv = Csv.FromString(input, hasHeaderRow: true))
+            {
+                var header = csv.HeaderRow;
+
+                TestHelpers.RowMatch(header, "name", "time", "approved");
+
+                var rows = csv.GetAllRowValues();
+
+                Assert.Equal(3, rows.Count);
+
+                TestHelpers.RowMatch(rows[0], "sue", "16", "y");
+                TestHelpers.RowMatch(rows[1], "h", string.Empty, "y");
+                TestHelpers.RowMatch(rows[2], "fred", "5", "n");
+            }
+        }
+
+        [Fact]
+        public void HeaderRow02()
+        {
+            const string input = @"one, two, three
+h,b,5
+h,a,3";
+
+            using (var csv = Csv.FromString(input, hasHeaderRow: true))
+            {
+                var rows = csv.GetAllRowValues();
+                Assert.Equal(2, rows.Count);
+
+                var header = csv.HeaderRow;
+
+                var rowsAgain = csv.GetAllRowValues();
+                Assert.Equal(2, rowsAgain.Count);
+
+                TestHelpers.RowMatch(rows[0], "h", "b", "5");
+                TestHelpers.RowMatch(rows[1], "h", "a", "3");
+
+                Assert.Equal(rows[0], rowsAgain[0]);
+                Assert.Equal(rows[1], rowsAgain[1]);
+
+                var headerAgain = csv.HeaderRow;
+
+                TestHelpers.RowMatch(header, "one", "two", "three");
+                Assert.Equal(header, headerAgain);
             }
         }
     }

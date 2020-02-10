@@ -37,7 +37,7 @@
         /// Whether the file starts with a row defining the column names.
         /// Default <see langword="false"/>.
         /// </summary>
-        public bool IncludesHeaderRow { get; set; }
+        public bool HasHeaderRow { get; set; }
 
         /// <summary>
         /// The encoding to interpret the CSV with.

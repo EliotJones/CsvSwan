@@ -5,16 +5,23 @@
     using System.IO;
     using System.Text;
 
+    /// <inheritdoc />
+    /// <summary>
+    /// Provides access to the data in a CSV file. Use one of the static methods to open a CSV file, for example
+    /// <see cref="M:CsvSwan.Csv.Open(System.String,System.Char)" />
+    /// </summary>
     public class Csv : IDisposable
     {
+        #region Static Factories
         public static Csv Open(string filename, char separator = ',') => new Csv(File.OpenRead(filename), CsvOptions.WithSeparator(separator), true);
         public static Csv Open(Stream fileStream, char separator = ',') => new Csv(fileStream, CsvOptions.WithSeparator(separator), false);
         public static Csv Open(byte[] fileBytes, char separator = ',') => new Csv(new MemoryStream(fileBytes), CsvOptions.WithSeparator(separator), true);
         public static Csv Open(Stream fileStream, CsvOptions options) => new Csv(fileStream, options, false);
-        public static Csv FromString(string value, char separator = ',') => FromString(value, new CsvOptions
+        public static Csv FromString(string value, char separator = ',', bool hasHeaderRow = false) => FromString(value, new CsvOptions
         {
             Separator = separator,
-            Encoding = Encoding.Unicode
+            Encoding = Encoding.Unicode,
+            HasHeaderRow = hasHeaderRow
         });
 
         public static Csv FromString(string value, CsvOptions options)
@@ -22,6 +29,7 @@
             var encoding = options.Encoding ?? Encoding.UTF8;
             return new Csv(new MemoryStream(encoding.GetBytes(value)), options, true);
         }
+        #endregion
 
         private readonly CsvReader reader;
         private readonly Stream stream;
@@ -30,11 +38,17 @@
         private IReadOnlyList<string> currentValues;
         private readonly RowAccessor accessor;
 
+        public IReadOnlyList<string> HeaderRow => reader.GetHeaderRow();
+
+        /// <summary>
+        /// Step through the rows in this CSV. <see cref="RowAccessor"/> should not be stored.
+        /// </summary>
         public IEnumerable<RowAccessor> Rows
         {
             get
             {
-                reader.SeekStart();
+                reader.SeekStart(true);
+                
                 while (reader.ReadRow(out currentValues))
                 {
                     yield return accessor;
@@ -56,13 +70,19 @@
 
             if (!stream.CanRead)
             {
-                throw new InvalidOperationException($"Cannot read from a stream of type: {stream.GetType()?.FullName}.");
+                throw new ArgumentException($"Cannot read from a stream of type: {stream.GetType().FullName}.", nameof(stream));
             }
 
-            reader = new CsvReader(stream, options);
-            accessor = new RowAccessor(this);
+            if (!stream.CanSeek)
+            {
+                throw new ArgumentException($"Cannot seek in a stream of type: {stream.GetType().FullName}.", nameof(stream));
+            }
+
             this.stream = stream;
             this.canDisposeStream = canDisposeStream;
+
+            reader = new CsvReader(this.stream, options);
+            accessor = new RowAccessor(this);
         }
 
         public IReadOnlyList<IReadOnlyList<string>> GetAllRowValues()
@@ -77,10 +97,11 @@
             return result;
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             reader.Dispose();
-            
+
             if (canDisposeStream)
             {
                 stream?.Dispose();

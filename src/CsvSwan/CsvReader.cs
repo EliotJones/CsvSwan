@@ -15,10 +15,10 @@
 
         private readonly object mutex = new object();
         private readonly StringBuilder sb = new StringBuilder();
+        private readonly List<string> output = new List<string>();
 
         private State state = State.None;
-
-        private readonly List<string> output = new List<string>();
+        private IReadOnlyList<string> header;
 
         public CsvReader(Stream inputStream, CsvOptions options)
         {
@@ -26,11 +26,14 @@
             stream = new BufferedStream(inputStream ?? throw new ArgumentNullException(nameof(inputStream)));
             reader = options.Encoding == null ? new StreamReader(stream, true) : new StreamReader(stream, options.Encoding);
 
+            if (!options.HasHeaderRow)
+            {
+                header = Array.Empty<string>();
+            }
+
             tabIsWhitespace = options.Separator != '\t';
             separatorIsEscapable = options.Separator != '\t';
         }
-
-        public long Position { get; set; }
 
         public bool ReadRow(out IReadOnlyList<string> values)
         {
@@ -61,7 +64,7 @@
                                 break;
                             }
 
-                            if (IsWhitespace(b, false, tabIsWhitespace))
+                            if (IsWhitespace(b, tabIsWhitespace))
                             {
                                 state = State.None;
                                 break;
@@ -86,7 +89,7 @@
                             break;
                         case State.None:
                             {
-                                if (IsWhitespace(b, false, tabIsWhitespace))
+                                if (IsWhitespace(b, tabIsWhitespace))
                                 {
                                     break;
                                 }
@@ -248,19 +251,9 @@
                                                                           && !prevWasEscaped
                                                                           && IsEscape(prev);
 
-        public void Dispose()
-        {
-            stream?.Flush();
-        }
-
-        private static bool IsWhitespace(int value, bool includeNewline, bool includeTab)
+        private static bool IsWhitespace(int value, bool includeTab)
         {
             if (value == 32)
-            {
-                return true;
-            }
-
-            if (includeNewline && IsNewline(value))
             {
                 return true;
             }
@@ -278,6 +271,50 @@
             return value == 13 || value == 10;
         }
 
+        public void SeekStart(bool skipHeader)
+        {
+            lock (mutex)
+            {
+                reader.DiscardBufferedData();
+                reader.BaseStream.Seek(0, SeekOrigin.Begin);
+
+                if (skipHeader && options.HasHeaderRow)
+                {
+                    ReadRow(out _);
+                }
+
+                state = skipHeader ? State.Endline : State.None;
+            }
+        }
+
+        public IReadOnlyList<string> GetHeaderRow()
+        {
+            lock (mutex)
+            {
+                if (header != null)
+                {
+                    return header;
+                }
+
+                SeekStart(false);
+
+                if (ReadRow(out var readHeader))
+                {
+                    header = new List<string>(readHeader);
+                    return header;
+                }
+
+                header = Array.Empty<string>();
+                return header;
+            }
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            stream?.Flush();
+        }
+        
         private enum State : byte
         {
             None = 0,
@@ -294,19 +331,6 @@
             None = 0,
             FieldStart = 1,
             EscapeQuote = 2
-        }
-
-        public void SeekStart()
-        {
-            reader.BaseStream.Seek(0, SeekOrigin.Begin);
-
-            // TODO: header row
-            if (options.IncludesHeaderRow)
-            {
-                // read row
-            }
-
-            state = State.None;
         }
     }
 }
