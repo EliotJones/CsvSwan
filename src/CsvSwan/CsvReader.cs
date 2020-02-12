@@ -275,6 +275,8 @@
         {
             lock (mutex)
             {
+                state = State.None;
+
                 reader.DiscardBufferedData();
                 reader.BaseStream.Seek(0, SeekOrigin.Begin);
 

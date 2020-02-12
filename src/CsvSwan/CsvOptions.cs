@@ -46,9 +46,9 @@
 
         /// <summary>
         /// The backslash character can be used to escape quote marks inside fields.
-        /// Default <see langword="true"/>.
+        /// Default <see langword="false"/>.
         /// </summary>
-        public bool BackslashEscapesQuotes { get; set; } = true;
+        public bool BackslashEscapesQuotes { get; set; } = false;
 
         /// <summary>
         /// Create a new <see cref="CsvOptions"/> with the specified separator.
