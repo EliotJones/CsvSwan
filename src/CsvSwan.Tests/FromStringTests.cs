@@ -380,5 +380,38 @@ one, two, 3";
                 TestHelpers.RowMatch(rows[1], "one", "two", "3");
             }
         }
+
+        [Fact]
+        public void CanDoubleUpQuoteCharacterToEscape()
+        {
+            const string input = @"'hello ''hi''', accordion, biscuit
+'once', is, two";
+
+            using (var csv = Csv.FromString(input, new CsvOptions { QuotationCharacter = '\'' }))
+            {
+                var rows = csv.GetAllRowValues();
+
+                Assert.Equal(2, rows.Count);
+                TestHelpers.RowMatch(rows[0], "hello 'hi'", "accordion", "biscuit");
+                TestHelpers.RowMatch(rows[1], "once", "is", "two");
+            }
+        }
+
+        [Fact]
+        public void QuotedTextCanContainNewlines()
+        {
+            const string input = "one, \"this contains\r\na line break\", three\r\nsnake,egg,toad\r\n,,mushroom";
+
+            using (var csv = Csv.FromString(input))
+            {
+                var rows = csv.GetAllRowValues();
+
+                Assert.Equal(3, rows.Count);
+
+                TestHelpers.RowMatch(rows[0], "one", "this contains\r\na line break", "three");
+                TestHelpers.RowMatch(rows[1], "snake", "egg", "toad");
+                TestHelpers.RowMatch(rows[2], string.Empty, string.Empty, "mushroom");
+            }
+        }
     }
 }

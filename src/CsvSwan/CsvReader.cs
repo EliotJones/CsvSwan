@@ -136,7 +136,7 @@
                                 {
                                     lastQuoteType = LastQuoteType.None;
                                 }
-                                else if (reader.Peek() != '"')
+                                else if (!IsQuote(reader.Peek()))
                                 {
                                     state = State.ReadingToSeparator;
                                     output.Add(sb.ToString());
