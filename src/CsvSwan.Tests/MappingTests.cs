@@ -86,6 +86,57 @@ emily,,sutland";
             }
         }
 
+        [Fact]
+        public void CanMapStringWithColumnHeaders()
+        {
+            const string input = @"surname,FIRSTNAME,green
+bloggs,joe,no
+shaw,susan,no
+o'neill,sheila,yes";
+
+            using (var csv = Csv.FromString(input, hasHeaderRow: true))
+            {
+                var values = csv.MapRows<MyClassAllUnmapped>().ToList();
+
+                Assert.Equal(3, values.Count);
+
+                Assert.Equal("joe", values[0].FirstName);
+                Assert.Null(values[0].MiddleName);
+                Assert.Equal("bloggs", values[0].Surname);
+
+                Assert.Equal("susan", values[1].FirstName);
+                Assert.Null(values[1].MiddleName);
+                Assert.Equal("shaw", values[1].Surname);
+
+                Assert.Equal("sheila", values[2].FirstName);
+                Assert.Null(values[2].MiddleName);
+                Assert.Equal("o'neill", values[2].Surname);
+            }
+        }
+
+        [Fact]
+        public void CanMapStringPrefersAttributeToColumnHeaders()
+        {
+            const string input = @"surname,middle,lastNAMe
+wrong,bigsby,bongsby
+plinky,plonky,music";
+
+            using (var csv = Csv.FromString(input, hasHeaderRow: true))
+            {
+                var values = csv.MapRows<MyClassIgnoreUnmapped>().ToList();
+
+                Assert.Equal(2, values.Count);
+
+                Assert.Null(values[0].FirstName);
+                Assert.Equal("bigsby", values[0].MiddleName);
+                Assert.Equal("bongsby", values[0].Surname);
+
+                Assert.Null(values[1].FirstName);
+                Assert.Equal("plonky", values[1].MiddleName);
+                Assert.Equal("music", values[1].Surname);
+            }
+        }
+
         public class MyClassAllMapped
         {
             [CsvColumnOrder(0)]

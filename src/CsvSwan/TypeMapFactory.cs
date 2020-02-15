@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Reflection;
 
     internal class TypeMapFactory
@@ -25,30 +24,63 @@
             var type = typeof(T);
             var props = type.GetProperties();
 
-            var setters = new List<(int index, MethodInfo setter, Type propertyType)>();
-            var settersUnmapped = new List<(MethodInfo, Type propertyType)>();
+            var settersByAttribute = new List<(int index, MethodInfo setter, Type propertyType)>();
+            var settersByHeader = new List<(int index, MethodInfo setter, Type propertyType)>();
+            var settersUnmapped = new List<(int index, MethodInfo setter, Type propertyType)>();
 
             foreach (var prop in props)
             {
                 var attr = prop.GetCustomAttribute<CsvColumnOrderAttribute>();
 
-                if (attr == null)
+                // Attributes first.
+                if (attr != null || settersByAttribute.Count > 0)
                 {
-                    settersUnmapped.Add((prop.GetSetMethod(true), prop.PropertyType));
+                    if (attr == null)
+                    {
+                        continue;
+                    }
+
+                    settersByAttribute.Add((attr.ColumnIndex, prop.GetSetMethod(true), prop.PropertyType));
                     continue;
                 }
 
-                var val = attr.ColumnIndex;
+                // Then headers
+                if (columnHeaders != null)
+                {
+                    var index = -1;
+                    for (var i = 0; i < columnHeaders.Count; i++)
+                    {
+                        var header = columnHeaders[i];
+                        if (string.Equals(header, prop.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            index = i;
+                            break;
+                        }
+                    }
 
-                setters.Add((val, prop.GetSetMethod(true), prop.PropertyType));
+                    if (index < 0)
+                    {
+                        continue;
+                    }
+
+                    settersByHeader.Add((index, prop.GetSetMethod(true), prop.PropertyType));
+                    continue;
+                }
+
+                settersUnmapped.Add((settersUnmapped.Count, prop.GetSetMethod(true), prop.PropertyType));
             }
 
-            if (setters.Count > 0)
+            if (settersByAttribute.Count > 0)
             {
-                return new TypeMapFactory(type, setters);
+                return new TypeMapFactory(type, settersByAttribute);
             }
 
-            return new TypeMapFactory(type, settersUnmapped.Select((x, i) => (i, x.Item1, x.propertyType)).ToList());
+            if (settersByHeader.Count > 0)
+            {
+                return new TypeMapFactory(type, settersByHeader);
+            }
+            
+            return new TypeMapFactory(type, settersUnmapped);
         }
 
         public object Map(Csv.RowAccessor row, IFormatProvider formatProvider)

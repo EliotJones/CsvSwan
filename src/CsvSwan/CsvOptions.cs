@@ -53,12 +53,13 @@
         /// <summary>
         /// Create a new <see cref="CsvOptions"/> with the specified separator.
         /// </summary>
-        public static CsvOptions WithSeparator(char separator)
+        public static CsvOptions WithSeparator(char separator, bool hasHeaderRow = false)
         {
             return new CsvOptions
             {
                 Separator = separator,
-                AreTextFieldsQuoted = true
+                AreTextFieldsQuoted = true,
+                HasHeaderRow = hasHeaderRow
             };
         }
     }

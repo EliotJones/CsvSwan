@@ -15,10 +15,10 @@
     {
         #region Static Factories
 
-        public static Csv Open(string filename, char separator = ',') => new Csv(File.OpenRead(filename), CsvOptions.WithSeparator(separator), true);
+        public static Csv Open(string filename, char separator = ',', bool hasHeaderRow = false) => new Csv(File.OpenRead(filename), CsvOptions.WithSeparator(separator, hasHeaderRow), true);
         public static Csv Open(string filename, CsvOptions options) => new Csv(File.OpenRead(filename), options, true);
-        public static Csv Open(Stream fileStream, char separator = ',') => new Csv(fileStream, CsvOptions.WithSeparator(separator), false);
-        public static Csv Open(byte[] fileBytes, char separator = ',') => new Csv(new MemoryStream(fileBytes), CsvOptions.WithSeparator(separator), true);
+        public static Csv Open(Stream fileStream, char separator = ',', bool hasHeaderRow = false) => new Csv(fileStream, CsvOptions.WithSeparator(separator, hasHeaderRow), false);
+        public static Csv Open(byte[] fileBytes, char separator = ',', bool hasHeaderRow = false) => new Csv(new MemoryStream(fileBytes), CsvOptions.WithSeparator(separator, hasHeaderRow), true);
         public static Csv Open(Stream fileStream, CsvOptions options) => new Csv(fileStream, options, false);
 
         public static Csv FromString(string value, char separator = ',', bool hasHeaderRow = false) => FromString(value, new CsvOptions
@@ -43,6 +43,7 @@
         private IReadOnlyList<string> currentValues;
         private int rowIndex = -1;
         private readonly RowAccessor accessor;
+        private readonly CsvOptions options;
 
         /// <summary>
         /// Get the header row values for this file. If there is no header row (<see cref="CsvOptions.HasHeaderRow"/> is
@@ -70,11 +71,6 @@
 
         private Csv(Stream stream, CsvOptions options, bool canDisposeStream)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
             if (stream == null)
             {
                 throw new ArgumentNullException(nameof(stream));
@@ -91,6 +87,7 @@
             }
 
             this.stream = stream;
+            this.options = options ?? throw new ArgumentNullException(nameof(options));
             this.canDisposeStream = canDisposeStream;
 
             reader = new CsvReader(this.stream, options);
@@ -118,7 +115,18 @@
             return result;
         }
 
-        public IEnumerable<T> MapRows<T>()
+        /// <summary>
+        /// Map each row in the CSV file to an object of type <see cref="T"/>.
+        /// Columns can be mapped to properties using the <see cref="CsvColumnOrderAttribute"/>
+        /// to specify a column index for a property on the input type. Alternatively if the CSV
+        /// contains a header row the properties will be matched to the columns using a case insensitive
+        /// lookup. <see cref="CsvColumnOrderAttribute"/> takes precedence over header column names, if present.
+        /// Finally for a type without attributes in a CSV without a header row, the property order is used, this
+        /// is generally the declaration order for properties but this is not (always) deterministic.
+        /// </summary>
+        /// <typeparam name="T">The type of object to map to.</typeparam>
+        /// <returns>An enumerable of instances of type <see cref="T"/>.</returns>
+        public IEnumerable<T> MapRows<T>() where T : class
         {
             foreach (var row in Rows)
             {
@@ -217,7 +225,7 @@
                 {
                     if (!typeFactories.TryGetValue(typeof(T), out var factory))
                     {
-                        factory = TypeMapFactory.Create<T>();
+                        factory = TypeMapFactory.Create<T>(csv.options.HasHeaderRow ? csv.HeaderRow : null);
                         typeFactories[typeof(T)] = factory;
                     }
 

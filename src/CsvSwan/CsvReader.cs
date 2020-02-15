@@ -246,6 +246,7 @@
         private bool IsQuote(int b) => options.AreTextFieldsQuoted && b == options.QuotationCharacter;
         private bool IsSeperator(int b) => b == options.Separator;
         private bool IsEscape(int b) => options.BackslashEscapesQuotes && b == '\\';
+        private static bool IsNewline(int value) => value == 13 || value == 10;
 
         private bool IsEscapedSeparator(bool prevWasEscaped, int prev) => !separatorIsEscapable
                                                                           && !prevWasEscaped
@@ -266,10 +267,6 @@
             return false;
         }
 
-        private static bool IsNewline(int value)
-        {
-            return value == 13 || value == 10;
-        }
 
         public void SeekStart(bool skipHeader)
         {
