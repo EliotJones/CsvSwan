@@ -2,13 +2,22 @@
 {
     using System.Text;
 
+    /// <summary>
+    /// Options defining how to open/parse a <see cref="Csv"/>.
+    /// </summary>
     public class CsvOptions
     {
+        /// <summary>
+        /// A tab-separated file with no header row.
+        /// </summary>
         public static CsvOptions TabSeparated { get; } = new CsvOptions
         {
             Separator = '\t'
         };
 
+        /// <summary>
+        /// A comma-separated file with no header row.
+        /// </summary>
         public static CsvOptions CommaSeparated { get; } = new CsvOptions
         {
             Separator = ','

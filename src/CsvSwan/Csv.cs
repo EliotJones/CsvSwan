@@ -15,19 +15,38 @@
     {
         #region Static Factories
 
+        /// <summary>
+        /// Open a <see cref="Csv"/> from a file at the given path.
+        /// </summary>
         public static Csv Open(string filename, char separator = ',', bool hasHeaderRow = false) => new Csv(File.OpenRead(filename), CsvOptions.WithSeparator(separator, hasHeaderRow), true);
+        /// <summary>
+        /// Open a <see cref="Csv"/> from a file at the given path.
+        /// </summary>
         public static Csv Open(string filename, CsvOptions options) => new Csv(File.OpenRead(filename), options, true);
+        /// <summary>
+        /// Open a <see cref="Csv"/> from the provided stream.
+        /// </summary>
         public static Csv Open(Stream fileStream, char separator = ',', bool hasHeaderRow = false) => new Csv(fileStream, CsvOptions.WithSeparator(separator, hasHeaderRow), false);
+        /// <summary>
+        /// Open a <see cref="Csv"/> from the provided bytes.
+        /// </summary>
         public static Csv Open(byte[] fileBytes, char separator = ',', bool hasHeaderRow = false) => new Csv(new MemoryStream(fileBytes), CsvOptions.WithSeparator(separator, hasHeaderRow), true);
+        /// <summary>
+        /// Open a <see cref="Csv"/> from the provided stream.
+        /// </summary>
         public static Csv Open(Stream fileStream, CsvOptions options) => new Csv(fileStream, options, false);
-
+        /// <summary>
+        /// Open a <see cref="Csv"/> from the input string.
+        /// </summary>
         public static Csv FromString(string value, char separator = ',', bool hasHeaderRow = false) => FromString(value, new CsvOptions
         {
             Separator = separator,
             Encoding = Encoding.Unicode,
             HasHeaderRow = hasHeaderRow
         });
-
+        /// <summary>
+        /// Open a <see cref="Csv"/> from the input string.
+        /// </summary>
         public static Csv FromString(string value, CsvOptions options)
         {
             var encoding = options.Encoding ?? Encoding.UTF8;
@@ -103,6 +122,9 @@
             }
         }
 
+        /// <summary>
+        /// Gets the set of values for all rows in the file.
+        /// </summary>
         public IReadOnlyList<IReadOnlyList<string>> GetAllRowValues()
         {
             var result = new List<IReadOnlyList<string>>();
@@ -116,7 +138,7 @@
         }
 
         /// <summary>
-        /// Map each row in the CSV file to an object of type <see cref="T"/>.
+        /// Map each row in the CSV file to an object of type T.
         /// Columns can be mapped to properties using the <see cref="CsvColumnOrderAttribute"/>
         /// to specify a column index for a property on the input type. Alternatively if the CSV
         /// contains a header row the properties will be matched to the columns using a case insensitive
@@ -125,7 +147,7 @@
         /// is generally the declaration order for properties but this is not (always) deterministic.
         /// </summary>
         /// <typeparam name="T">The type of object to map to.</typeparam>
-        /// <returns>An enumerable of instances of type <see cref="T"/>.</returns>
+        /// <returns>An enumerable of instances of type T.</returns>
         public IEnumerable<T> MapRows<T>() where T : class
         {
             foreach (var row in Rows)
@@ -170,36 +192,63 @@
                 return new List<string>(csv.currentValues);
             }
 
+            /// <summary>
+            /// Gets the value from the column at the given index as a <see langword="short"/>.
+            /// </summary>
             public short GetShort(int index, IFormatProvider formatProvider = null)
             {
                 GuardIndex(index);
                 return short.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
             }
 
+            /// <summary>
+            /// Gets the value from the column at the given index as an <see langword="int"/>.
+            /// </summary>
             public int GetInt(int index, IFormatProvider formatProvider = null)
             {
                 GuardIndex(index);
                 return int.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
             }
 
+            /// <summary>
+            /// Gets the value from the column at the given index as a <see langword="long"/>.
+            /// </summary>
             public long GetLong(int index, IFormatProvider formatProvider = null)
             {
                 GuardIndex(index);
                 return long.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
             }
 
+            /// <summary>
+            /// Gets the value from the column at the given index as a <see langword="decimal"/>.
+            /// </summary>
             public decimal GetDecimal(int index, IFormatProvider formatProvider = null)
             {
                 GuardIndex(index);
                 return decimal.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
             }
 
+            /// <summary>
+            /// Gets the value from the column at the given index as a <see langword="double"/>.
+            /// </summary>
             public double GetDouble(int index, IFormatProvider formatProvider = null)
             {
                 GuardIndex(index);
                 return double.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
             }
 
+            /// <summary>
+            /// Gets the value from the column at the given index as a <see langword="float"/>.
+            /// </summary>
+            public float GetFloat(int index, IFormatProvider formatProvider = null)
+            {
+                GuardIndex(index);
+                return float.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
+            }
+
+            /// <summary>
+            /// Gets the <see langword="string" /> value from the column at the given index.
+            /// </summary>
             public string GetString(int index)
             {
                 GuardIndex(index);
@@ -219,6 +268,9 @@
                 }
             }
 
+            /// <summary>
+            /// Map the row to a type T using either <see cref="CsvColumnOrderAttribute"/>s or the header row.
+            /// </summary>
             public T Map<T>(IFormatProvider formatProvider = null)
             {
                 lock (mutex)
