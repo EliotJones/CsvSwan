@@ -99,7 +99,7 @@
             }
             else
             {
-                HeaderRow = Array.Empty<string>();
+                HeaderRow = new string[0];
             }
         }
 

@@ -1,7 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>CsvSwan is a simple and fast CSV reader.</Description>
+    <PackageLicenseUrl>https://github.com/EliotJones/CsvSwan/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/EliotJones/CsvSwan</PackageProjectUrl>
+    <PackageTags>csv;csv-reader;tsv;comma-separated;csv-parser;csv-parsing</PackageTags>
+    <RepositoryUrl>https://github.com/EliotJones/CsvSwan</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)'=='net45'">
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\icon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+  
 </Project>

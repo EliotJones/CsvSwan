@@ -7,7 +7,13 @@
 
     internal class CsvReader : IDisposable
     {
+        private static readonly string[] EmptyHeader = new string[0];
+
+#if NET45
+        private readonly Stream stream;
+#else
         private readonly BufferedStream stream;
+#endif
         private readonly CsvOptions options;
         private readonly StreamReader reader;
         private readonly bool tabIsWhitespace;
@@ -23,12 +29,18 @@
         public CsvReader(Stream inputStream, CsvOptions options)
         {
             this.options = options ?? throw new ArgumentNullException(nameof(options));
+
+#if NET45
+            this.stream = inputStream ?? throw new ArgumentNullException(nameof(inputStream));
+#else
             stream = new BufferedStream(inputStream ?? throw new ArgumentNullException(nameof(inputStream)));
+#endif
+
             reader = options.Encoding == null ? new StreamReader(stream, true) : new StreamReader(stream, options.Encoding);
 
             if (!options.HasHeaderRow)
             {
-                header = Array.Empty<string>();
+                header = EmptyHeader;
             }
 
             tabIsWhitespace = options.Separator != '\t';
@@ -303,7 +315,8 @@
                     return header;
                 }
 
-                header = Array.Empty<string>();
+                header = EmptyHeader;
+
                 return header;
             }
         }
