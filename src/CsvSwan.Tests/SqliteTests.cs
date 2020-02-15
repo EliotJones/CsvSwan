@@ -10,7 +10,7 @@
         {
             using (var csv = Csv.Open(TestHelpers.GetDocumentPath("sqlite-pipe-quotes.csv"), '|', true))
             {
-                var values = csv.MapRows<AdjustmentRecord>().ToList();
+                var values = csv.Map<AdjustmentRecord>().ToList();
 
                 Assert.Equal(6, values.Count);
 

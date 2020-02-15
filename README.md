@@ -1,30 +1,51 @@
 # CSV Swan #
 
-CsvSwan is a small side-project to build a .NET Standard CSV parsing library that "just works" for the simplest CSV scenarios.
+<img src="https://raw.githubusercontent.com/EliotJones/CsvSwan/master/icon.png" width="128px"/>
+
+CsvSwan is a small .NET Standard CSV parsing library that "just works" for the simplest CSV scenarios. It aims to be high-performance and provide easy-to-use defaults.
 
     using (Csv csv = Csv.Open(@"C:\path\to\file.csv"))
     {
         foreach (var row in csv.Rows)
         {
-            // Proposed design(s)...
-            int id = row.GetInt(0);
-            string name = row.GetString(1);
-            MyClass obj1 = row.Get<MyClass>();
-
-            // Current design
+            // Get all values
             IReadOnlyList<string> values = row.GetValues();
+
+            // Map to a numeric type
+            int id = row.GetInt(0);
+            decimal value = row.GetDecimal(1);
         }
     }
 
-The default settings are such that a file is expected to have:
+You can also map to a list of objects of a given type:
+
+    public class MyClass
+    {
+        [CsvColumnOrder(0)]
+        public int Id { get; set; }
+
+        [CsvColumnOrder(1)]
+        public string Name { get; set; }
+    }
+
+    using (Csv cvs = Csv.Open(@"C:\path\to\file.csv"))
+    {
+        List<MyClass> results = csv.Map<MyClass>().ToList();
+    }
+
+The default settings are for a file with:
 
 + A comma separator `,`.
 + Newlines between rows, either Unix `\n` or Windows `\r\n`.
 + Optional quotes using the double quote `"` for fields.
-+ Quotes inside quoted fields escaped using either RFC-4180 double-double quotes `""` or backslash escaped `\"`.
++ Quotes inside quoted fields escaped using either RFC-4180 double-double quotes `""` (or optionally backslash escaped `\"`, use `CsvOptions.BackslashEscapesQuotes`, off by default).
 
-This doesn't support support quote-escaping outside quoted fields, but quotes can be turned off entirely in the options. Additionally the user must specify if the file contains a header row prior to parsing.
+Additionally the user must specify if the file contains a header row prior to parsing using `CsvOptions.HasHeaderRow`, this is off by default.
 
-The separator and quote character can be set to other values.
+The separator and quote character can be set to other values using the `CsvOptions` parameter to the `Csv.Open` methods.
 
-This was just a small side project to pass time on the train, it probably won't be finished or published on NuGet.
+## Installation ##
+
+Get it from [NuGet](https://www.nuget.org/packages/CsvSwan) or install from the package manager command line:
+
+    > Install-Package CsvSwan

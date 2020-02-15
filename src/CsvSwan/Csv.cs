@@ -148,7 +148,7 @@
         /// </summary>
         /// <typeparam name="T">The type of object to map to.</typeparam>
         /// <returns>An enumerable of instances of type T.</returns>
-        public IEnumerable<T> MapRows<T>() where T : class
+        public IEnumerable<T> Map<T>() where T : class
         {
             foreach (var row in Rows)
             {
@@ -271,7 +271,7 @@
             /// <summary>
             /// Map the row to a type T using either <see cref="CsvColumnOrderAttribute"/>s or the header row.
             /// </summary>
-            public T Map<T>(IFormatProvider formatProvider = null)
+            public T Map<T>(IFormatProvider formatProvider = null) where T : class
             {
                 lock (mutex)
                 {

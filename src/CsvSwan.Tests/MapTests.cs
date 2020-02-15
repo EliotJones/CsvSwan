@@ -3,7 +3,7 @@ namespace CsvSwan.Tests
     using System.Linq;
     using Xunit;
 
-    public class MappingTests
+    public class MapTests
     {
         [Fact]
         public void CanMapStringOnlyClass()
@@ -14,7 +14,7 @@ emily,,sutland";
 
             using (var csv = Csv.FromString(input))
             {
-                var values = csv.MapRows<MyClassAllMapped>().ToList();
+                var values = csv.Map<MyClassAllMapped>().ToList();
 
                 Assert.Equal(3, values.Count);
 
@@ -41,7 +41,7 @@ emily,,sutland";
 
             using (var csv = Csv.FromString(input))
             {
-                var values = csv.MapRows<MyClassAllUnmapped>().ToList();
+                var values = csv.Map<MyClassAllUnmapped>().ToList();
 
                 Assert.Equal(3, values.Count);
 
@@ -68,7 +68,7 @@ emily,,sutland";
 
             using (var csv = Csv.FromString(input))
             {
-                var values = csv.MapRows<MyClassIgnoreUnmapped>().ToList();
+                var values = csv.Map<MyClassIgnoreUnmapped>().ToList();
 
                 Assert.Equal(3, values.Count);
 
@@ -96,7 +96,7 @@ o'neill,sheila,yes";
 
             using (var csv = Csv.FromString(input, hasHeaderRow: true))
             {
-                var values = csv.MapRows<MyClassAllUnmapped>().ToList();
+                var values = csv.Map<MyClassAllUnmapped>().ToList();
 
                 Assert.Equal(3, values.Count);
 
@@ -123,7 +123,7 @@ plinky,plonky,music";
 
             using (var csv = Csv.FromString(input, hasHeaderRow: true))
             {
-                var values = csv.MapRows<MyClassIgnoreUnmapped>().ToList();
+                var values = csv.Map<MyClassIgnoreUnmapped>().ToList();
 
                 Assert.Equal(2, values.Count);
 
