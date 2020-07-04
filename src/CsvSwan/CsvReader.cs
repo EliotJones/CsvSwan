@@ -324,7 +324,6 @@
         /// <inheritdoc />
         public void Dispose()
         {
-            stream?.Flush();
         }
         
         private enum State : byte
