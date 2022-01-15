@@ -52,6 +52,13 @@
             var encoding = options.Encoding ?? Encoding.UTF8;
             return new Csv(new MemoryStream(encoding.GetBytes(value)), options, true);
         }
+        /// <summary>
+        /// Create a <see cref="CsvBuilder"/> for generating a new CSV.
+        /// </summary>
+        public static CsvBuilder Create(CsvBuilder.Options options = null)
+        {
+            return new CsvBuilder(options);
+        }
 
         #endregion
 
