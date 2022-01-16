@@ -242,7 +242,17 @@ namespace CsvSwan
 
             if (field is string str)
             {
-                stringBuilder.Append(options.QuoteCharacter).Append(SafeEscape(str)).Append(options.QuoteCharacter);
+                var safeEscaped = SafeEscape(str);
+                if (options.QuoteAllFields || safeEscaped != str)
+                {
+                    stringBuilder.Append(options.QuoteCharacter).Append(safeEscaped).Append(options.QuoteCharacter);
+                }
+                else
+                {
+                    stringBuilder.Append(str);
+                }
+
+                return;
             }
 
             //string valueString;
