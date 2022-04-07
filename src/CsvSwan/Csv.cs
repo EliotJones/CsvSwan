@@ -123,7 +123,7 @@ namespace CsvSwan
             this.canDisposeStream = canDisposeStream;
 
             reader = new CsvReader(this.stream, options);
-            accessor = new RowAccessor(this);
+            accessor = new RowAccessor(this, options);
 
             if (options.HasHeaderRow)
             {
@@ -187,13 +187,15 @@ namespace CsvSwan
         public class RowAccessor
         {
             private readonly Csv csv;
+            private readonly CsvOptions options;
 
             private readonly object mutex = new object();
             private readonly Dictionary<Type, TypeMapFactory> typeFactories = new Dictionary<Type, TypeMapFactory>();
 
-            internal RowAccessor(Csv csv)
+            internal RowAccessor(Csv csv, CsvOptions options)
             {
                 this.csv = csv ?? throw new ArgumentNullException(nameof(csv));
+                this.options = options ?? new CsvOptions();
             }
 
             /// <summary>
@@ -210,8 +212,36 @@ namespace CsvSwan
             /// </summary>
             public short GetShort(int index, IFormatProvider formatProvider = null)
             {
+                var value = GetNullableShort(index, formatProvider);
+
+                if (value.HasValue)
+                {
+                    return value.Value;
+                }
+
+                if (options.DefaultNullValues)
+                {
+                    return default;
+                }
+
+                throw new InvalidOperationException($"Null or invalid value encountered for column {index} at row {csv.rowIndex}: '{csv.currentValues[index]}'.");
+            }
+
+            /// <summary>
+            /// Gets the value from the column at the given index as an <see langword="short?"/>.
+            /// </summary>
+            public short? GetNullableShort(int index, IFormatProvider formatProvider = null)
+            {
                 GuardIndex(index);
-                return short.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
+
+                var value = csv.currentValues[index];
+
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
+
+                return short.Parse(value, NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
             }
 
             /// <summary>
@@ -219,8 +249,19 @@ namespace CsvSwan
             /// </summary>
             public int GetInt(int index, IFormatProvider formatProvider = null)
             {
-                GuardIndex(index);
-                return int.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
+                var value = GetNullableInt(index, formatProvider);
+
+                if (value.HasValue)
+                {
+                    return value.Value;
+                }
+
+                if (options.DefaultNullValues)
+                {
+                    return default;
+                }
+
+                throw new InvalidOperationException($"Null or invalid value encountered for column {index} at row {csv.rowIndex}: '{csv.currentValues[index]}'.");
             }
 
             /// <summary>
@@ -245,8 +286,19 @@ namespace CsvSwan
             /// </summary>
             public long GetLong(int index, IFormatProvider formatProvider = null)
             {
-                GuardIndex(index);
-                return long.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
+                var value = GetNullableLong(index, formatProvider);
+
+                if (value.HasValue)
+                {
+                    return value.Value;
+                }
+
+                if (options.DefaultNullValues)
+                {
+                    return default;
+                }
+
+                throw new InvalidOperationException($"Null or invalid value encountered for column {index} at row {csv.rowIndex}: '{csv.currentValues[index]}'.");
             }
 
             /// <summary>
@@ -271,8 +323,19 @@ namespace CsvSwan
             /// </summary>
             public decimal GetDecimal(int index, IFormatProvider formatProvider = null)
             {
-                GuardIndex(index);
-                return decimal.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
+                var value = GetNullableDecimal(index, formatProvider);
+
+                if (value.HasValue)
+                {
+                    return value.Value;
+                }
+
+                if (options.DefaultNullValues)
+                {
+                    return default;
+                }
+
+                throw new InvalidOperationException($"Null or invalid value encountered for column {index} at row {csv.rowIndex}: '{csv.currentValues[index]}'.");
             }
 
             /// <summary>
@@ -297,8 +360,19 @@ namespace CsvSwan
             /// </summary>
             public double GetDouble(int index, IFormatProvider formatProvider = null)
             {
-                GuardIndex(index);
-                return double.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
+                var value = GetNullableDouble(index, formatProvider);
+
+                if (value.HasValue)
+                {
+                    return value.Value;
+                }
+
+                if (options.DefaultNullValues)
+                {
+                    return default;
+                }
+
+                throw new InvalidOperationException($"Null or invalid value encountered for column {index} at row {csv.rowIndex}: '{csv.currentValues[index]}'.");
             }
 
             /// <summary>
@@ -323,8 +397,19 @@ namespace CsvSwan
             /// </summary>
             public float GetFloat(int index, IFormatProvider formatProvider = null)
             {
-                GuardIndex(index);
-                return float.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
+                var value = GetNullableFloat(index, formatProvider);
+
+                if (value.HasValue)
+                {
+                    return value.Value;
+                }
+
+                if (options.DefaultNullValues)
+                {
+                    return default;
+                }
+
+                throw new InvalidOperationException($"Null or invalid value encountered for column {index} at row {csv.rowIndex}: '{csv.currentValues[index]}'.");
             }
 
             /// <summary>
@@ -353,12 +438,17 @@ namespace CsvSwan
 
                 var nullable = GetNullableBool(index, formatProvider);
 
-                if (!nullable.HasValue)
+                if (nullable.HasValue)
                 {
-                    throw new NullReferenceException($"No bool value provided for bool at column index {index}, value was '{csv.currentValues[index]}'.");
+                    return nullable.Value;
                 }
 
-                return nullable.Value;
+                if (options.DefaultNullValues)
+                {
+                    return default;
+                }
+
+                throw new InvalidOperationException($"Null or invalid value encountered for column {index} at row {csv.rowIndex}: '{csv.currentValues[index]}'.");
             }
 
             /// <summary>

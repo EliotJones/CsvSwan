@@ -60,6 +60,12 @@
         public bool BackslashEscapesQuotes { get; set; } = false;
 
         /// <summary>
+        /// For non-nullable types like <see langword="int" />s, <see langword="double" />s, <see langword="DateTime" />s
+        /// use a default value when <see langword="null" /> is encountered.
+        /// </summary>
+        public bool DefaultNullValues { get; set; } = true;
+
+        /// <summary>
         /// Create a new <see cref="CsvOptions"/> with the specified separator.
         /// </summary>
         public static CsvOptions WithSeparator(char separator, bool hasHeaderRow = false)
@@ -68,7 +74,8 @@
             {
                 Separator = separator,
                 AreTextFieldsQuoted = true,
-                HasHeaderRow = hasHeaderRow
+                HasHeaderRow = hasHeaderRow,
+                DefaultNullValues = true
             };
         }
     }
