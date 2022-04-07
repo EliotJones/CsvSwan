@@ -345,6 +345,68 @@ namespace CsvSwan
             }
 
             /// <summary>
+            /// Gets the value from the column at the given index as a <see langword="bool"/>.
+            /// </summary>
+            public bool GetBool(int index, IFormatProvider formatProvider = null)
+            {
+                GuardIndex(index);
+
+                var nullable = GetNullableBool(index, formatProvider);
+
+                if (!nullable.HasValue)
+                {
+                    throw new NullReferenceException($"No bool value provided for bool at column index {index}, value was '{csv.currentValues[index]}'.");
+                }
+
+                return nullable.Value;
+            }
+
+            /// <summary>
+            /// Gets the value from the column at the given index as a <see langword="bool?"/>.
+            /// </summary>
+            public bool? GetNullableBool(int index, IFormatProvider formatProvider = null)
+            {
+                GuardIndex(index);
+
+                var value = csv.currentValues[index];
+
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
+
+                if (bool.TryParse(value, out var result))
+                {
+                    return result;
+                }
+
+                if (int.TryParse(value, NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture, out var intBool))
+                {
+                    if (intBool == 0)
+                    {
+                        return false;
+                    }
+
+                    if (intBool == 1)
+                    {
+                        return true;
+                    }
+                }
+
+                if (string.Equals("yes", value, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (string.Equals("no", value, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                return null;
+            }
+
+            /// <summary>
             /// Gets the <see langword="string" /> value from the column at the given index.
             /// </summary>
             public string GetString(int index)

@@ -141,6 +141,14 @@
                 {
                     value = row.GetNullableDecimal(setter.column, formatProvider);
                 }
+                else if (propertyType == typeof(bool))
+                {
+                    value = row.GetBool(setter.column, formatProvider);
+                }
+                else if (propertyType == typeof(bool?))
+                {
+                    value = row.GetNullableBool(setter.column, formatProvider);
+                }
                 else
                 {
                     throw new InvalidOperationException($"Cannot map to type {propertyType.FullName} on type {type.FullName}.");

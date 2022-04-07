@@ -140,10 +140,10 @@ plinky,plonky,music";
         [Fact]
         public void CanMapWithNullableIntFromColumnHeaders()
         {
-            const string input = @"name,price,time
-Jim,5,100
-Jane,,12
-Bob,3,7";
+            const string input = @"name,price,time,valid
+Jim,5,100,true
+Jane,,12,false
+Bob,3,7,";
 
             using (var csv = Csv.FromString(input, hasHeaderRow: true))
             {
@@ -154,14 +154,17 @@ Bob,3,7";
                 Assert.Equal("Jim", values[0].Name);
                 Assert.Equal(5, values[0].Price);
                 Assert.Equal(100, values[0].Time);
+                Assert.True(values[0].Valid);
 
                 Assert.Equal("Jane", values[1].Name);
                 Assert.Null(values[1].Price);
                 Assert.Equal(12, values[1].Time);
+                Assert.False(values[1].Valid);
 
                 Assert.Equal("Bob", values[2].Name);
                 Assert.Equal(3, values[2].Price);
                 Assert.Equal(7, values[2].Time);
+                Assert.Null(values[2].Valid);
             }
         }
 
@@ -204,6 +207,8 @@ Bob,3,7";
             public int? Price { get; set; }
 
             public int Time { get; set; }
+
+            public bool? Valid { get; set; }
         }
     }
 }
