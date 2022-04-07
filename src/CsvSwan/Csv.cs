@@ -1,4 +1,8 @@
-﻿namespace CsvSwan
+﻿using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("CsvSwan.Tests")]
+
+namespace CsvSwan
 {
     using System;
     using System.Collections.Generic;
@@ -44,6 +48,7 @@
             Encoding = Encoding.Unicode,
             HasHeaderRow = hasHeaderRow
         });
+
         /// <summary>
         /// Open a <see cref="Csv"/> from the input string.
         /// </summary>
@@ -52,10 +57,11 @@
             var encoding = options.Encoding ?? Encoding.UTF8;
             return new Csv(new MemoryStream(encoding.GetBytes(value)), options, true);
         }
+
         /// <summary>
         /// Create a <see cref="CsvBuilder"/> for generating a new CSV.
         /// </summary>
-        public static CsvBuilder Create(CsvBuilder.Options options = null)
+        internal static CsvBuilder Create(CsvBuilder.Options options = null)
         {
             return new CsvBuilder(options);
         }
@@ -218,12 +224,46 @@
             }
 
             /// <summary>
+            /// Gets the value from the column at the given index as an <see langword="int?"/>.
+            /// </summary>
+            public int? GetNullableInt(int index, IFormatProvider formatProvider = null)
+            {
+                GuardIndex(index);
+
+                var value = csv.currentValues[index];
+
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
+
+                return int.Parse(value, NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
+            }
+
+            /// <summary>
             /// Gets the value from the column at the given index as a <see langword="long"/>.
             /// </summary>
             public long GetLong(int index, IFormatProvider formatProvider = null)
             {
                 GuardIndex(index);
                 return long.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
+            }
+
+            /// <summary>
+            /// Gets the value from the column at the given index as a <see langword="long?"/>.
+            /// </summary>
+            public long? GetNullableLong(int index, IFormatProvider formatProvider = null)
+            {
+                GuardIndex(index);
+
+                var value = csv.currentValues[index];
+
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
+
+                return long.Parse(value, NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
             }
 
             /// <summary>
@@ -236,6 +276,23 @@
             }
 
             /// <summary>
+            /// Gets the value from the column at the given index as a <see langword="decimal?"/>.
+            /// </summary>
+            public decimal? GetNullableDecimal(int index, IFormatProvider formatProvider = null)
+            {
+                GuardIndex(index);
+
+                var value = csv.currentValues[index];
+
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
+
+                return decimal.Parse(value, NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
+            }
+
+            /// <summary>
             /// Gets the value from the column at the given index as a <see langword="double"/>.
             /// </summary>
             public double GetDouble(int index, IFormatProvider formatProvider = null)
@@ -245,12 +302,46 @@
             }
 
             /// <summary>
+            /// Gets the value from the column at the given index as a <see langword="double?"/>.
+            /// </summary>
+            public double? GetNullableDouble(int index, IFormatProvider formatProvider = null)
+            {
+                GuardIndex(index);
+
+                var value = csv.currentValues[index];
+
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
+
+                return double.Parse(value, NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
+            }
+
+            /// <summary>
             /// Gets the value from the column at the given index as a <see langword="float"/>.
             /// </summary>
             public float GetFloat(int index, IFormatProvider formatProvider = null)
             {
                 GuardIndex(index);
                 return float.Parse(csv.currentValues[index], NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
+            }
+
+            /// <summary>
+            /// Gets the value from the column at the given index as a <see langword="float?"/>.
+            /// </summary>
+            public float? GetNullableFloat(int index, IFormatProvider formatProvider = null)
+            {
+                GuardIndex(index);
+
+                var value = csv.currentValues[index];
+
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
+
+                return float.Parse(value, NumberStyles.Number, formatProvider ?? CultureInfo.InvariantCulture);
             }
 
             /// <summary>

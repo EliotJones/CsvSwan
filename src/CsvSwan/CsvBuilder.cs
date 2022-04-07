@@ -9,7 +9,7 @@ namespace CsvSwan
     /// <summary>
     /// Used to build a new CSV file.
     /// </summary>
-    public class CsvBuilder
+    internal class CsvBuilder
     {
         private Options options;
 

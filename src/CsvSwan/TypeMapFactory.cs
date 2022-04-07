@@ -105,21 +105,41 @@
                 {
                     value = row.GetInt(setter.column, formatProvider);
                 }
+                else if (propertyType == typeof(int?))
+                {
+                    value = row.GetNullableInt(setter.column, formatProvider);
+                }
                 else if (propertyType == typeof(long))
                 {
                     value = row.GetLong(setter.column, formatProvider);
+                }
+                else if (propertyType == typeof(long?))
+                {
+                    value = row.GetNullableLong(setter.column, formatProvider);
                 }
                 else if (propertyType == typeof(double))
                 {
                     value = row.GetDouble(setter.column, formatProvider);
                 }
+                else if (propertyType == typeof(double?))
+                {
+                    value = row.GetNullableDouble(setter.column, formatProvider);
+                }
                 else if (propertyType == typeof(float))
                 {
-                    value = (float) row.GetDouble(setter.column, formatProvider);
+                    value = row.GetFloat(setter.column, formatProvider);
+                }
+                else if (propertyType == typeof(float?))
+                {
+                    value = row.GetNullableFloat(setter.column, formatProvider);
                 }
                 else if (propertyType == typeof(decimal))
                 {
                     value = row.GetDecimal(setter.column, formatProvider);
+                }
+                else if (propertyType == typeof(decimal?))
+                {
+                    value = row.GetNullableDecimal(setter.column, formatProvider);
                 }
                 else
                 {
