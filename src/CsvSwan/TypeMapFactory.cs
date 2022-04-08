@@ -149,6 +149,14 @@
                 {
                     value = row.GetNullableBool(setter.column, formatProvider);
                 }
+                else if (propertyType == typeof(DateTime))
+                {
+                    value = row.GetDateTime(setter.column, formatProvider);
+                }
+                else if (propertyType == typeof(DateTime?))
+                {
+                    value = row.GetNullableDateTime(setter.column, formatProvider);
+                }
                 else
                 {
                     throw new InvalidOperationException($"Cannot map to type {propertyType.FullName} on type {type.FullName}.");

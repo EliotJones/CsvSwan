@@ -1,4 +1,7 @@
-﻿namespace CsvSwan.Tests
+﻿using System;
+using System.Collections.Generic;
+
+namespace CsvSwan.Tests
 {
     using System.Linq;
     using Xunit;
@@ -168,6 +171,83 @@ Bob,3,7,";
             }
         }
 
+        [Fact]
+        public void CanMapWithNonNullableIntFromColumnHeadersUsingDefaultOption()
+        {
+            const string input = @"name,price,time,valid
+Jim,5,100,true
+Jane,,12,false
+Bob,3,7,";
+
+            using (var csv = Csv.FromString(input, hasHeaderRow: true))
+            {
+                var values = csv.Map<MyClassUnmappedNonNullable>().ToList();
+
+                Assert.Equal(3, values.Count);
+
+                Assert.Equal("Jim", values[0].Name);
+                Assert.Equal(5, values[0].Price);
+                Assert.Equal(100, values[0].Time);
+                Assert.True(values[0].Valid);
+
+                Assert.Equal("Jane", values[1].Name);
+                Assert.Equal(0, values[1].Price);
+                Assert.Equal(12, values[1].Time);
+                Assert.False(values[1].Valid);
+
+                Assert.Equal("Bob", values[2].Name);
+                Assert.Equal(3, values[2].Price);
+                Assert.Equal(7, values[2].Time);
+                Assert.False(values[2].Valid);
+            }
+        }
+
+        [Fact]
+        public void CanMapWithNonNullableIntFromColumnHeadersUsingThrowOption()
+        {
+            const string input = @"name,price,time,valid
+Jim,5,100,true
+Jane,,12,false
+Bob,3,7,";
+
+            using (var csv = Csv.FromString(input, new CsvOptions
+            {
+                DefaultNullValues = false,
+                HasHeaderRow = true
+            }))
+            {
+                // ReSharper disable once AccessToDisposedClosure
+                Func<List<MyClassUnmappedNonNullable>> func = () => csv.Map<MyClassUnmappedNonNullable>().ToList();
+
+                Assert.Throws<InvalidOperationException>(func);
+            }
+        }
+
+        [Fact]
+        public void CanMapWithDateTime()
+        {
+            const string input = @"key,created,identifier
+any-key,2022-05-16,3873764
+other-key,2020-12-05,457473
+my-key,,473737";
+
+            using (var csv = Csv.FromString(input, hasHeaderRow: true))
+            {
+                var values = csv.Map<MyClassUnmappedDateTime>().ToList();
+
+                Assert.Equal(3, values.Count);
+
+                Assert.Equal("any-key", values[0].Key);
+                Assert.Equal(new DateTime(2022, 5, 16), values[0].Created);
+
+                Assert.Equal("other-key", values[1].Key);
+                Assert.Equal(new DateTime(2020, 12, 5), values[1].Created);
+
+                Assert.Equal("my-key", values[2].Key);
+                Assert.Equal(DateTime.MinValue, values[2].Created);
+            }
+        }
+
         public class MyClassAllMapped
         {
             [CsvColumnOrder(0)]
@@ -209,6 +289,24 @@ Bob,3,7,";
             public int Time { get; set; }
 
             public bool? Valid { get; set; }
+        }
+
+        public class MyClassUnmappedNonNullable
+        {
+            public string Name { get; set; }
+
+            public int Price { get; set; }
+
+            public int Time { get; set; }
+
+            public bool Valid { get; set; }
+        }
+
+        public class MyClassUnmappedDateTime
+        {
+            public string Key { get; set; }
+
+            public DateTime Created { get; set; }
         }
     }
 }

@@ -434,8 +434,6 @@ namespace CsvSwan
             /// </summary>
             public bool GetBool(int index, IFormatProvider formatProvider = null)
             {
-                GuardIndex(index);
-
                 var nullable = GetNullableBool(index, formatProvider);
 
                 if (nullable.HasValue)
@@ -494,6 +492,48 @@ namespace CsvSwan
                 }
 
                 return null;
+            }
+
+            /// <summary>
+            /// Gets the value from the column at the given index as a <see cref="DateTime"/>.
+            /// </summary>
+            public DateTime GetDateTime(int index, IFormatProvider formatProvider = null)
+            {
+                var value = GetNullableDateTime(index, formatProvider);
+
+                if (value.HasValue)
+                {
+                    return value.Value;
+                }
+
+                if (options.DefaultNullValues)
+                {
+                    return default;
+                }
+
+                throw new InvalidOperationException($"Null or invalid value encountered for column {index} at row {csv.rowIndex}: '{csv.currentValues[index]}'.");
+            }
+
+            /// <summary>
+            /// Gets the value from the column at the given index as a <see cref="DateTime"/>?.
+            /// </summary>
+            public DateTime? GetNullableDateTime(int index, IFormatProvider formatProvider = null)
+            {
+                GuardIndex(index);
+
+                var value = csv.currentValues[index];
+
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
+
+                if (!DateTime.TryParse(value, formatProvider, DateTimeStyles.None, out var dateTime))
+                {
+                    return null;
+                }
+
+                return dateTime;
             }
 
             /// <summary>
