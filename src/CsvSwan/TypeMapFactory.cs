@@ -33,15 +33,33 @@
                 var attr = prop.GetCustomAttribute<CsvColumnOrderAttribute>();
 
                 // Attributes first.
-                if (attr != null || settersByAttribute.Count > 0)
+                if (attr != null)
                 {
-                    if (attr == null)
+                    settersByAttribute.Add((attr.ColumnIndex, prop.GetSetMethod(true), prop.PropertyType));
+                    continue;
+                }
+
+                var nameAttr = prop.GetCustomAttribute<CsvColumnNameAttribute>();
+
+                if (nameAttr != null && columnHeaders != null)
+                {
+                    var hasSet = false;
+                    for (int i = 0; i < columnHeaders.Count; i++)
+                    {
+                        var header = columnHeaders[i];
+
+                        if (string.Equals(header, nameAttr.ColumnName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            settersByAttribute.Add((i, prop.GetSetMethod(true), prop.PropertyType));
+                            hasSet = true;
+                            break;
+                        }
+                    }
+
+                    if (hasSet)
                     {
                         continue;
                     }
-
-                    settersByAttribute.Add((attr.ColumnIndex, prop.GetSetMethod(true), prop.PropertyType));
-                    continue;
                 }
 
                 // Then headers
@@ -50,8 +68,20 @@
                     var index = -1;
                     for (var i = 0; i < columnHeaders.Count; i++)
                     {
-                        var header = columnHeaders[i];
+                        var header = columnHeaders[i]?.Trim();
+
+                        if (string.IsNullOrWhiteSpace(header))
+                        {
+                            continue;
+                        }
+
                         if (string.Equals(header, prop.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            index = i;
+                            break;
+                        }
+
+                        if (header.Contains(" ") && string.Equals(header.Replace(" ", string.Empty), prop.Name, StringComparison.OrdinalIgnoreCase))
                         {
                             index = i;
                             break;
@@ -70,8 +100,13 @@
                 settersUnmapped.Add((settersUnmapped.Count, prop.GetSetMethod(true), prop.PropertyType));
             }
 
-            if (settersByAttribute.Count > 0)
+            if (settersByAttribute.Count > 0 || settersByHeader.Count > 0)
             {
+                foreach (var headerSetter in settersByHeader)
+                {
+                    settersByAttribute.Add(headerSetter);
+                }
+
                 return new TypeMapFactory(type, settersByAttribute);
             }
 

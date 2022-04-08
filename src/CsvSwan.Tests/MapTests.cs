@@ -118,6 +118,34 @@ o'neill,sheila,yes";
         }
 
         [Fact]
+        public void CanMapStringWithColumnHeadersContainingWhitespace()
+        {
+            const string input = @"surname,FIRST NAME,green
+bloggs,joe,no
+shaw,susan,no
+o'neill,sheila,yes";
+
+            using (var csv = Csv.FromString(input, hasHeaderRow: true))
+            {
+                var values = csv.Map<MyClassAllUnmapped>().ToList();
+
+                Assert.Equal(3, values.Count);
+
+                Assert.Equal("joe", values[0].FirstName);
+                Assert.Null(values[0].MiddleName);
+                Assert.Equal("bloggs", values[0].Surname);
+
+                Assert.Equal("susan", values[1].FirstName);
+                Assert.Null(values[1].MiddleName);
+                Assert.Equal("shaw", values[1].Surname);
+
+                Assert.Equal("sheila", values[2].FirstName);
+                Assert.Null(values[2].MiddleName);
+                Assert.Equal("o'neill", values[2].Surname);
+            }
+        }
+
+        [Fact]
         public void CanMapStringPrefersAttributeToColumnHeaders()
         {
             const string input = @"surname,middle,lastNAMe
@@ -248,6 +276,29 @@ my-key,,473737";
             }
         }
 
+        [Fact]
+        public void CanMapWithMultipleAttributes()
+        {
+            const string input = @"J554323,1st,SKU
+camry,toyota,366212
+accord,honda,477299";
+
+            using (var csv = Csv.FromString(input, hasHeaderRow: true))
+            {
+                var values = csv.Map<MyClassMappedMultipleWays>().ToList();
+
+                Assert.Equal(2, values.Count);
+
+                Assert.Equal("toyota", values[0].First);
+                Assert.Equal("camry", values[0].Last);
+                Assert.Equal("366212", values[0].Sku);
+
+                Assert.Equal("honda", values[1].First);
+                Assert.Equal("accord", values[1].Last);
+                Assert.Equal("477299", values[1].Sku);
+            }
+        }
+
         public class MyClassAllMapped
         {
             [CsvColumnOrder(0)]
@@ -307,6 +358,17 @@ my-key,,473737";
             public string Key { get; set; }
 
             public DateTime Created { get; set; }
+        }
+
+        public class MyClassMappedMultipleWays
+        {
+            [CsvColumnName("1st")]
+            public string First { get; set; }
+
+            [CsvColumnOrder(0)]
+            public string Last { get; set; }
+
+            public string Sku { get; set; }
         }
     }
 }
