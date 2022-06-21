@@ -321,6 +321,25 @@
             }
         }
 
+        /// <summary>
+        /// Get the number of columns by measuring the first row, header or not.
+        /// </summary>
+        /// <returns>The number of columns</returns>
+        public int GetColumnCount()
+        {
+            lock (mutex)
+            {
+                SeekStart(false);
+
+                if (ReadRow(out var row))
+                {
+                    return row.Count;
+                }
+
+                return 0;
+            }
+        }
+
         /// <inheritdoc />
         public void Dispose()
         {

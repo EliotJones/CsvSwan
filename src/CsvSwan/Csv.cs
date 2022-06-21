@@ -84,6 +84,11 @@ namespace CsvSwan
         public IReadOnlyList<string> HeaderRow { get; }
 
         /// <summary>
+        /// Get the number of columns in this CSV.
+        /// </summary>
+        public int ColumnCount { get; }
+
+        /// <summary>
         /// Step through the rows in this CSV. <see cref="RowAccessor"/> should not be stored.
         /// </summary>
         public IEnumerable<RowAccessor> Rows
@@ -133,6 +138,8 @@ namespace CsvSwan
             {
                 HeaderRow = new string[0];
             }
+
+            ColumnCount = reader.GetColumnCount();
         }
 
         /// <summary>
