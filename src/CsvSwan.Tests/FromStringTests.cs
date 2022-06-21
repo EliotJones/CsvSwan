@@ -413,5 +413,16 @@ one, two, 3";
                 TestHelpers.RowMatch(rows[2], string.Empty, string.Empty, "mushroom");
             }
         }
+
+        [Fact]
+        public void HasRightColumnCount()
+        {
+            const string input = "one,two,three,four,\r\none,two,three,four,five";
+
+            using (var csv = Csv.FromString(input))
+            {
+                Assert.Equal(5, csv.ColumnCount);
+            }
+        }
     }
 }
